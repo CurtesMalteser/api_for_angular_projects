@@ -4,6 +4,9 @@ import json
 db = SQLAlchemy()
 
 class Reservation(db.Model):
+
+    __tablename__ = 'reservation'
+
     id = db.Column(db.Integer, primary_key=True)
     checkInDate = db.Column(db.DateTime, nullable=False)
     checkOutDate = db.Column(db.DateTime, nullable=False)

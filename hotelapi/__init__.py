@@ -2,6 +2,7 @@ from flask import (
     Flask,
     jsonify,
     request,
+    abort,
     )
 from flask_migrate import Migrate
 from flask_cors import (
@@ -83,6 +84,25 @@ def create_app(test_config=None):
 
         else:
             return "Content type is not supported."
+
+    @app.route('/reservation/<int:id>', methods=['DELETE'])
+    @cross_origin()
+    def deleteReservation(id: int):
+
+        error = False
+
+        try:
+            reservation = Reservation.query.get(id)
+            db.session.delete(reservation)
+            db.session.commit()
+        except:
+            db.session.rollback()
+        finally:
+            db.session.close()
         
+        if(error):
+            abort(500)
+        else:
+           return jsonify("")
 
     return app

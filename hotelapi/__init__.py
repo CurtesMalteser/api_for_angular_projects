@@ -85,6 +85,38 @@ def create_app(test_config=None):
         else:
             abort(404, "Content type is not supported.")
 
+    @app.route('/reservation/<int:id>', methods=['PUT'])
+    @cross_origin()
+    def updateReservation(id: int):
+        content_type = request.headers.get('Content-Type')
+        if ('application/json' in content_type):
+            try:
+                json_data = json.dumps(request.json)
+
+                def updateReservation(dict: dict[any, any]):
+                    reservation = Reservation.query.get(id)
+                    reservation.checkInDate= str(dict.get('checkInDate'))
+                    reservation.checkOutDate= str(dict.get('checkOutDate'))
+                    reservation.guestName= str(dict.get('guestName'))
+                    reservation.guestEmail= str(dict.get('guestEmail'))
+                    reservation.roomNumber= str(dict.get('roomNumber'))
+                    return reservation
+
+                reservation = json.loads(json_data, object_hook =
+                   lambda d : updateReservation(d))
+
+                db.session.add(reservation)
+                db.session.commit()
+            except:
+                db.session.rollback()
+            finally:
+                db.session.close()
+
+            return jsonify(request.json)
+
+        else:
+            abort(404, "Content type is not supported.")
+
     @app.route('/reservation/<int:id>', methods=['DELETE'])
     @cross_origin()
     def deleteReservation(id: int):

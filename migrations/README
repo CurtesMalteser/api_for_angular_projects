@@ -4,6 +4,7 @@ Single-database configuration for Flask.
 ### Setup db ###
 run:
 ```
-flask db init
-flask db migrate
+flask db init|
+flask db migrate|
+flask db upgrade
 ```

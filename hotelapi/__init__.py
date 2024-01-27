@@ -29,38 +29,34 @@ def create_app(test_config=None):
     @app.route('/reservations')
     @cross_origin()
     def getReservations():
-        reservation = ReservationData()
-        reservation.id = 1
-        reservation.checkInDate = '2024-01-27'
-        reservation.checkOutDate = '2024-01-28'
-        reservation.guestName = 'Test'
-        reservation.guestEmail = 'test@email.com'
-        reservation.roomNumber = 1
 
-        reservation2 = ReservationData()
-        reservation2.id = 2
-        reservation2.checkInDate = '2024-01-30'
-        reservation2.checkOutDate = '2024-02-02'
-        reservation2.guestName = 'Test2'
-        reservation2.guestEmail = 'test2@email.com'
-        reservation2.roomNumber = 2
+        reservations = Reservation.query.all()
+        
+        reservations = map(lambda reservation : ReservationData(
+            id = reservation.id,
+            checkInDate = str(reservation.checkInDate),
+            checkOutDate = str(reservation.checkOutDate),
+            guestName = reservation.guestName,
+            guestEmail = reservation.guestEmail,
+            roomNumber = reservation.roomNumber,
+        ), reservations)
 
-        reservations = '[{}]'.format(reservation.toJSON() + ', ' + reservation2.toJSON())
-        return reservations
+        return jsonify(list(reservations))
 
     @app.route('/reservation/<int:id>')
     @cross_origin()
     def getReservation(id: int):
 
-        reservation = ReservationData()
-        reservation.id = 1
-        reservation.checkInDate = '2024-01-27'
-        reservation.checkOutDate = '2024-01-27'
-        reservation.guestName = 'Test'
-        reservation.guestEmail = 'test@email.com'
-        reservation.roomNumber = 1
+        reservation = ReservationData(
+            id = 1,
+            checkInDate = '2024-01-27',
+            checkOutDate = '2024-01-27',
+            guestName = 'Test',
+            guestEmail = 'test@email.com',
+            roomNumber = 1,
+        )
 
-        return reservation.toJSON()
+        return jsonify(reservation)
 
     @app.route('/reservation', methods=['POST'])
     @cross_origin()

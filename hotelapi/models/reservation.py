@@ -14,6 +14,9 @@ class Reservation(db.Model):
     guestEmail = db.Column(db.String(120))
     roomNumber = db.Column(db.Integer)
 
+from dataclasses import dataclass
+
+@dataclass
 class ReservationData():
     id : int
     checkInDate : str
@@ -29,6 +32,3 @@ class ReservationData():
         self.guestName = guestName
         self.guestEmail = guestEmail
         self.roomNumber = roomNumber
-
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

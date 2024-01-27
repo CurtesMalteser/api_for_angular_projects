@@ -22,5 +22,13 @@ class ReservationData():
     guestEmail : str
     roomNumber : int
 
+    def __init__(self, id: int, checkInDate: str, checkOutDate: str, guestName: str, guestEmail: str, roomNumber: int):
+        self.id = id
+        self.checkInDate = checkInDate
+        self.checkOutDate = checkOutDate
+        self.guestName = guestName
+        self.guestEmail = guestEmail
+        self.roomNumber = roomNumber
+
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

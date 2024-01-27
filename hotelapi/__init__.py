@@ -11,8 +11,7 @@ from flask_cors import (
 from hotelapi.models.reservation import *
 from datetime import datetime
 import hotelapi.config as config
-from collections import namedtuple
-import sys
+import json
 
 def create_app(test_config=None):
     # create and configure the app
@@ -47,16 +46,14 @@ def create_app(test_config=None):
     @cross_origin()
     def getReservation(id: int):
 
-        reservation = ReservationData(
-            id = 1,
-            checkInDate = '2024-01-27',
-            checkOutDate = '2024-01-27',
-            guestName = 'Test',
-            guestEmail = 'test@email.com',
-            roomNumber = 1,
-        )
+        try:
+            reservation = Reservation.query.get(id)
+            reservation = ReservationData.fromReservation(model=reservation)
 
-        return jsonify(reservation)
+            return jsonify(reservation)
+        except:
+            #TODO: handle gracefuly with error code, also if the Reservation.query.get(id) just return 200 empty JSON
+            return jsonify('')
 
     @app.route('/reservation', methods=['POST'])
     @cross_origin()

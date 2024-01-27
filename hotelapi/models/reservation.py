@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-import json
+from dataclasses import dataclass
 
 db = SQLAlchemy()
 
@@ -14,7 +14,6 @@ class Reservation(db.Model):
     guestEmail = db.Column(db.String(120))
     roomNumber = db.Column(db.Integer)
 
-from dataclasses import dataclass
 
 @dataclass
 class ReservationData():
@@ -32,3 +31,14 @@ class ReservationData():
         self.guestName = guestName
         self.guestEmail = guestEmail
         self.roomNumber = roomNumber
+
+    @classmethod
+    def fromReservation(cls, model: Reservation):
+        return cls(
+            id = model.id,
+            checkInDate = str(model.checkInDate),
+            checkOutDate = str(model.checkOutDate),
+            guestName = model.guestName,
+            guestEmail = model.guestEmail,
+            roomNumber = model.roomNumber,
+        )

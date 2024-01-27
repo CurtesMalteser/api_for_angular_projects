@@ -1,5 +1,7 @@
 Single-database configuration for Flask.
 
+### Install dependencies ###
+pip install -r requirements.txt
 
 ### Setup db ###
 run:

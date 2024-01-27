@@ -3,6 +3,10 @@ from flask import (
     jsonify
     )
 from flask_migrate import Migrate
+from flask_cors import (
+    CORS,
+    cross_origin,
+    )
 from hotelapi.models.reservation import *
 from datetime import datetime
 import hotelapi.config as config
@@ -13,12 +17,15 @@ def create_app(test_config=None):
 
     app.config.from_object(config)
 
+    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
     db.init_app(app)
 
     migrate = Migrate(app, db)
 
     # a simple page that says hello
     @app.route('/reservations')
+    @cross_origin()
     def getReservations():
         reservation = ReservationData()
         reservation.id = 1
@@ -40,6 +47,6 @@ def create_app(test_config=None):
         
 
         users = '[{}]'.format(reservation.toJSON() + ', ' + reservation2.toJSON())
-        return jsonify(users) 
+        return users
 
     return app

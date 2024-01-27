@@ -14,6 +14,7 @@ from datetime import datetime
 import hotelapi.config as config
 import json
 
+import sys
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -60,8 +61,7 @@ def create_app(test_config=None):
     @cross_origin()
     def setReservation():
         content_type = request.headers.get('Content-Type')
-        if (content_type == 'application/json'):
-
+        if ('application/json' in content_type):
             try:
                 json_data = json.dumps(request.json)
                 reservation = json.loads(json_data, object_hook =
@@ -83,7 +83,7 @@ def create_app(test_config=None):
             return jsonify(request.json)
 
         else:
-            return "Content type is not supported."
+            abort(404, "Content type is not supported.")
 
     @app.route('/reservation/<int:id>', methods=['DELETE'])
     @cross_origin()

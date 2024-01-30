@@ -12,3 +12,12 @@ class Product():
         self.name = name
         self.price = price
         self.image_url =   image_url
+
+    @classmethod
+    def fromDict(cls, d: dict[any, any]):
+        return cls(
+            id= str(d.get('id')),
+            name= str(d.get('name')),
+            price= str(d.get('price')),
+            image_url= str(d.get('image_url')),
+            )

@@ -2,7 +2,8 @@ from flask import (
     Flask,
     jsonify,
     send_file,
-    abort
+    abort,
+    request,
     )
 from flask_cors import (
     CORS,
@@ -12,7 +13,7 @@ import json
 from animal_paintings_api.models.product import Product
 from pathlib import Path
 
-import sys
+cart: list[Product] = []
 
 def create_app(test_config=None):
 
@@ -21,12 +22,7 @@ def create_app(test_config=None):
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     file = open('./animal_paintings_api/resources/data.json')
-    data = json.load(file, object_hook = lambda d : Product(
-        id= str(d.get('id')),
-        name= str(d.get('name')),
-        price= str(d.get('price')),
-        image_url= str(d.get('image_url')),
-        ))
+    data = json.load(file, object_hook = lambda d : Product.fromDict(d = d))
 
 
     @app.route('/products')
@@ -47,5 +43,30 @@ def create_app(test_config=None):
         else:
             abort(404)
 
+    @app.route('/cart', methods=['POST'])
+    @cross_origin()
+    def addToCart():
+        content_type = request.headers.get('Content-Type')
+        if ('application/json' in content_type):
+            try:
+                json_data = json.dumps(request.json)
+                product = json.loads(json_data, object_hook = lambda d : Product.fromDict(d = d))
 
+                cart.append(product)
+
+                return jsonify(request.json)
+
+            except Exception:
+               abort(422, "JSON malformed.")
+
+        else:
+            abort(404, "Content type is not supported.")
+
+
+    @app.route('/cart')
+    @cross_origin()
+    def getCart():
+        return jsonify(cart)
+ 
+ 
     return app

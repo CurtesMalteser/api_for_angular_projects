@@ -67,6 +67,11 @@ def create_app(test_config=None):
     @cross_origin()
     def getCart():
         return jsonify(cart)
- 
+
+    @app.route('/cart', methods=['DELETE'])
+    @cross_origin()
+    def clearCart():
+        cart.clear()
+        return jsonify(success=True), 200
  
     return app

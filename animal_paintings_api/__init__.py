@@ -47,7 +47,7 @@ def create_app(test_config=None):
     @cross_origin()
     def addToCart():
         content_type = request.headers.get('Content-Type')
-        if ('application/json' in content_type):
+        if ('application/json' in str(content_type)):
             try:
                 json_data = json.dumps(request.json)
                 product = json.loads(json_data, object_hook = lambda d : Product.fromDict(d = d))
@@ -74,4 +74,23 @@ def create_app(test_config=None):
         cart.clear()
         return jsonify(success=True), 200
  
+    @app.route('/checkout', methods=['POST'])
+    @cross_origin()
+    def checkout():
+        content_type = request.headers.get('Content-Type')
+        if ('application/json' in str(content_type)):
+            try:
+                json_data = json.dumps(request.json)
+                json.loads(json_data, object_hook = lambda d : Product.fromDict(d = d))
+
+                cart.clear()
+
+                return jsonify(success=True), 200
+
+            except Exception:
+               abort(422, "JSON malformed.")
+
+        else:
+            abort(404, "Content type is not supported.")
+
     return app

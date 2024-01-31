@@ -60,7 +60,7 @@ def create_app(test_config=None):
     @cross_origin()
     def setReservation():
         content_type = request.headers.get('Content-Type')
-        if ('application/json' in content_type):
+        if ('application/json' in str(content_type)):
             try:
                 json_data = json.dumps(request.json)
                 reservation = json.loads(json_data, object_hook =
@@ -88,11 +88,11 @@ def create_app(test_config=None):
     @cross_origin()
     def updateReservation(id: int):
         content_type = request.headers.get('Content-Type')
-        if ('application/json' in content_type):
+        if ('application/json' in str(content_type)):
             try:
                 json_data = json.dumps(request.json)
 
-                def updateReservation(dict: dict[any, any]):
+                def updateReservation(dict: dict):
                     reservation = Reservation.query.get(id)
                     reservation.checkInDate= str(dict.get('checkInDate'))
                     reservation.checkOutDate= str(dict.get('checkOutDate'))

@@ -1,5 +1,14 @@
 from dataclasses import dataclass
 
+def _getFromKeyOrRaise(key: str, d: dict[str, str]) -> str :
+    
+    value = d.get(key)
+
+    if(isinstance(value, str)):
+        return value
+    else:
+        raise Exception('Missing value for key: {}'.format(key))
+
 @dataclass
 class Book():
     id: str
@@ -14,7 +23,7 @@ class Book():
     @classmethod
     def fromDict(cls, d: dict[str, str]):
         return cls(
-            id= str(d.get('id')),
-            name= str(d.get('name')),
-            author= str(d.get('author')),
+            id= _getFromKeyOrRaise(key='id', d=d),
+            name= _getFromKeyOrRaise(key='name', d=d),
+            author= _getFromKeyOrRaise(key='author', d=d),
             )

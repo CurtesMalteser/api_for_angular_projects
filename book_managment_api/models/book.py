@@ -12,18 +12,18 @@ def _getFromKeyOrRaise(key: str, d: dict[str, str]) -> str :
 @dataclass
 class Book():
     id: str
-    name: str
+    title: str
     author: str
 
-    def __init__(self, id: str, name: str, author: str):
+    def __init__(self, id: str, title: str, author: str):
         self.id = id
-        self.name = name
+        self.title = title
         self.author = author
 
     @classmethod
     def fromDict(cls, d: dict[str, str]):
         return cls(
             id= _getFromKeyOrRaise(key='id', d=d),
-            name= _getFromKeyOrRaise(key='name', d=d),
+            title= _getFromKeyOrRaise(key='title', d=d),
             author= _getFromKeyOrRaise(key='author', d=d),
             )

@@ -37,7 +37,7 @@ def create_app(test_config=None):
 
                 return jsonify(request.json)
 
-            except Exception as e:
+            except:
                 abort(422, "JSON malformed.")
         
         else:

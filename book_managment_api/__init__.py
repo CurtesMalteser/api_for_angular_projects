@@ -47,7 +47,9 @@ def create_app(test_config=None):
 
                     books.append(book)
 
-                    return jsonify(request.json)
+                    return jsonify({
+                        "sucess": True
+                    })
 
                 except:
                     abort(422, "JSON malformed.")

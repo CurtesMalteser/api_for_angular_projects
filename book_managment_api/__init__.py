@@ -10,6 +10,7 @@ from flask_cors import (
     )
 import json
 from book_managment_api.models.book import Book
+from book_managment_api.models.book_dto import setup_db
 
 books : list[Book] = []
 
@@ -18,6 +19,8 @@ is_success : bool = True
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
+
+    setup_db(app)
 
     cors = CORS(app, resources={r"*/api/*": {"origins": "*"}})
 

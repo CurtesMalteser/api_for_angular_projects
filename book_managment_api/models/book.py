@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from book_managment_api.models.book_dto import BookDto
 
 def _getFromKeyOrRaise(key: str, d: dict[str, str]) -> str :
     
@@ -38,4 +39,13 @@ class Book():
             title= _getFromKeyOrRaise(key='title', d=d),
             author= _getFromKeyOrRaise(key='author', d=d),
             rating= _getOptionalRatingOrRaise(key='rating', d=d),
+            )
+
+    @classmethod
+    def fromDto(cls, dto: BookDto):
+        return cls(
+            id= dto.bookId,
+            title= dto.title,
+            author= dto.author,
+            rating= dto.rating,
             )

@@ -127,6 +127,7 @@ def create_app(test_config=None):
             db.session.delete(reservation)
             db.session.commit()
         except:
+            error = True
             db.session.rollback()
         finally:
             db.session.close()

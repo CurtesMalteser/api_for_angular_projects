@@ -10,7 +10,7 @@ from flask_cors import (
     )
 import json
 from book_managment_api.models.book import Book
-from book_managment_api.models.book_dto import setup_db
+from book_managment_api.models.book_dto import *
 
 books : list[Book] = []
 
@@ -34,7 +34,15 @@ def create_app(test_config=None):
     @cross_origin()
     def getBooks():
         if(is_success):
-            return jsonify(books)
+            dataBooks = BookDto.query.all()
+            dataBooks = map(lambda  book: Book(
+                id= book.bookId,
+                title= book.title,
+                author= book.author,
+                rating= book.rating
+            ), dataBooks
+            )
+            return jsonify(list(dataBooks))
         else:
             abort(404, "Mocked failure! Call GET /success.")
 
@@ -62,6 +70,31 @@ def create_app(test_config=None):
         else:
             abort(404, "Mocked failure! Call GET /success.")
 
+
+    @app.route('/book/<string:bookId>', methods=['DELETE'])
+    @cross_origin()
+    def deleteBook(bookId: str):
+
+        error = False
+
+        try:
+            book = BookDto.query.filter_by(bookId=bookId).first()
+            if(isinstance(book, BookDto)):
+                book.delete()
+            else:
+                error = True
+        except:
+            error = True
+            db.session.rollback()
+        finally:
+            db.session.close()
+        
+        if(error):
+            abort(500)
+        else:
+           return jsonify({
+                        "sucess": True
+                    })
 
     @app.route('/success')
     @cross_origin()

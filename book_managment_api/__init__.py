@@ -81,26 +81,29 @@ def create_app(test_config=None):
     @cross_origin()
     def deleteBook(bookId: str):
 
-        error = False
+        if(is_success):
+            error = False
 
-        try:
-            book = BookDto.query.filter_by(bookId=bookId).first()
-            if(isinstance(book, BookDto)):
-                book.delete()
-            else:
+            try:
+                book = BookDto.query.filter_by(bookId=bookId).first()
+                if(isinstance(book, BookDto)):
+                    book.delete()
+                else:
+                    error = True
+            except:
                 error = True
-        except:
-            error = True
-            db.session.rollback()
-        finally:
-            db.session.close()
-        
-        if(error):
-            abort(500)
+                db.session.rollback()
+            finally:
+                db.session.close()
+
+            if(error):
+                abort(500)
+            else:
+               return jsonify({
+                            "sucess": True
+                        })
         else:
-           return jsonify({
-                        "sucess": True
-                    })
+            abort(404, "Mocked failure! Call GET /success.")
 
     @app.route('/success')
     @cross_origin()

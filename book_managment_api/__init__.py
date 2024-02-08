@@ -68,8 +68,8 @@ def create_app(test_config=None):
                     else:    
                         return jsonify(book)
 
-                except:
-                    abort(422, "JSON malformed.")
+                except Exception as e:
+                    abort(422, "JSON malformed. {}".format(e))
 
             else:
                 abort(404, "Content type is not supported.")

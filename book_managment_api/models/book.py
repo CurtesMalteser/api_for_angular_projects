@@ -6,6 +6,9 @@ def _getFromKeyOrRaise(key: str, d: dict[str, str]) -> str :
     value = d.get(key)
 
     if(isinstance(value, str)):
+        if(bool(value.strip()) is False):
+            raise Exception('Value of: {} cannot be empty'.format(key))
+
         return value
     else:
         raise Exception('Missing value for key: {}'.format(key))

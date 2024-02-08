@@ -32,7 +32,8 @@ class BookDto(db.Model):
   author = mapped_column(String, nullable=False)
   rating = mapped_column(Integer, nullable=False)
 
-  def __init__(self, title, author, rating):
+  def __init__(self, bookId, title, author, rating):
+    self.bookId = bookId
     self.title = title
     self.author = author
     self.rating = rating

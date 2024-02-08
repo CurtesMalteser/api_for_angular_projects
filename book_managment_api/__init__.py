@@ -12,8 +12,6 @@ import json
 from book_managment_api.models.book import Book
 from book_managment_api.models.book_dto import *
 
-books : list[Book] = []
-
 is_success : bool = True
 
 def create_app(test_config=None):
@@ -52,15 +50,23 @@ def create_app(test_config=None):
         if(is_success):
             content_type = request.headers.get('Content-Type')
             if ('application/json' in str(content_type)):
+                error = False
                 try:
                     json_data = json.dumps(request.json)
                     book = json.loads(json_data, object_hook = lambda d : Book.fromDict(d = d))
 
-                    books.append(book)
+                    try:
+                        BookDto(bookId = book.id, title=book.title, author= book.author, rating= book.rating).insert()
+                    except:
+                        error = True
+                        db.session.rollback()
+                    finally:
+                        db.session.close()
 
-                    return jsonify({
-                        "sucess": True
-                    })
+                    if(error):
+                        abort(500, "Internal server error")
+                    else:    
+                        return jsonify(book)
 
                 except:
                     abort(422, "JSON malformed.")

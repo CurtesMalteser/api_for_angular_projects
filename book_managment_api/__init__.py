@@ -11,18 +11,17 @@ from flask_cors import (
 import json
 from book_managment_api.models.book import Book
 from book_managment_api.models.book_dto import *
-import math
 
 is_success : bool = True
 
-def paginate_books(request):
+def paginate_books_or_none(request):
     page = request.args.get('page', 1, type=int)
     size = request.args.get('size', 8, type=int)
     size = size if size <= 8 else 8
     start = (page - 1) * size
     end = start + size
 
-    data_books = BookDto.query.all()
+    data_books = BookDto.query.order_by(BookDto.id).all()
 
     total_results = len(data_books)
     data_books = map(lambda  book: Book(
@@ -33,7 +32,18 @@ def paginate_books(request):
     ), data_books
     )
 
-    return list(data_books)[start:end]
+    data_books = list(data_books)[start:end]
+
+    if len(data_books) > 0:
+        return jsonify({
+            'success': True,
+            'books': data_books,
+            'page': page,
+            'page_size': size,
+            'total_results': total_results
+            })
+    else:
+        return None
 
 def create_app(test_config=None):
 
@@ -41,7 +51,7 @@ def create_app(test_config=None):
 
     setup_db(app)
 
-    cors = CORS(app, resources={r"*/api/*": {"origins": "*"}})
+    cors = CORS(app, resources={r"*": {"origins": "*"}})
 
     @app.after_request
     def after_request(response):
@@ -53,36 +63,15 @@ def create_app(test_config=None):
     @cross_origin()
     def getBooks():
         if(is_success):
-            page = request.args.get('page', 1, type=int)
-            size = request.args.get('size', 8, type=int)
-            size = size if size <= 8 else 8
-            start = (page - 1) * size
-            end = start + size
-
-            data_books = BookDto.query.all()
-
-            total_results = len(data_books)
-            data_books = map(lambda  book: Book(
-                id= book.bookId,
-                title= book.title,
-                author= book.author,
-                rating= book.rating
-            ), data_books
-            )
-            data_books = list(data_books)[start:end]
+            books = paginate_books_or_none(request=request)
             
-            if len(data_books) > 0:
-                return jsonify({
-                    'success': True,
-                    'books': data_books,
-                    'page': page,
-                    'page_size': size,
-                    'total_results': total_results
-                    })
+            if books is None:
+                abort(400)
             else:
-                abort(404, "Page index Not Found!")
+                return books
+
         else:
-            abort(404, "Mocked failure! Call GET /success.")
+            abort(404)
 
     @app.route('/book', methods=['POST'])
     @cross_origin()
@@ -95,26 +84,22 @@ def create_app(test_config=None):
                     json_data = json.dumps(request.json)
                     book = json.loads(json_data, object_hook = lambda d : Book.fromDict(d = d))
 
-                    try:
-                        BookDto(bookId = book.id, title=book.title, author= book.author, rating= book.rating).insert()
-                    except:
-                        error = True
-                        db.session.rollback()
-                    finally:
+                
+                    BookDto(bookId = book.id, title=book.title, author= book.author, rating= book.rating).insert()
+                
+                    return jsonify(book)
+
+                except:
+                    db.session.rollback()
+                    abort(422)
+                finally:
                         db.session.close()
-
-                    if(error):
-                        abort(500, "Internal server error")
-                    else:    
-                        return jsonify(book)
-
-                except Exception as e:
-                    abort(422, "JSON malformed. {}".format(e))
 
             else:
                 abort(404, "Content type is not supported.")
         else:
             abort(404, "Mocked failure! Call GET /success.")
+
 
 
     @app.route('/book/<string:bookId>', methods=['DELETE'])
@@ -125,11 +110,12 @@ def create_app(test_config=None):
             error = False
 
             try:
-                book = BookDto.query.filter_by(bookId=bookId).first()
-                if(isinstance(book, BookDto)):
-                    book.delete()
-                else:
+                book = BookDto.query.filter(BookDto.id == bookId).one_or_none()
+                if book is None:
                     error = True
+                else:
+                    book.delete()
+                    
             except:
                 error = True
                 db.session.rollback()
@@ -137,10 +123,11 @@ def create_app(test_config=None):
                 db.session.close()
 
             if(error):
-                abort(500)
+                abort(400)
             else:
                return jsonify({
-                            "sucess": True
+                            "sucess": True,
+                            "deleted": bookId,
                         })
         else:
             abort(404, "Mocked failure! Call GET /success.")
@@ -158,5 +145,41 @@ def create_app(test_config=None):
         global is_success
         is_success = False
         return jsonify("isSuccess: False")
+
+
+    @app.errorhandler(400)
+    def not_there(error):
+        return jsonify({
+            "success": False, 
+            "error": 400,
+            "message": "Bad request",
+            }), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 404,
+            "message": "Not found",
+            }), 404
+
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False, 
+            "error": 422,
+            "message": "Unprocessable: {}".format(error),
+            }), 422
+
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({
+            "success": False, 
+            "error": 500,
+            "message": "Internal Server Error",
+            }), 500
+
 
     return app

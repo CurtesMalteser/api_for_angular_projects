@@ -32,6 +32,10 @@ def create_app(test_config=None):
     @cross_origin()
     def getBooks():
         if(is_success):
+            page = request.args.get('page', 1, type=int)
+            start = (page - 1) * 8
+            end = start + 8
+
             dataBooks = BookDto.query.all()
             dataBooks = map(lambda  book: Book(
                 id= book.bookId,
@@ -40,7 +44,8 @@ def create_app(test_config=None):
                 rating= book.rating
             ), dataBooks
             )
-            return jsonify(list(dataBooks))
+            dataBooks = list(dataBooks)[start:end]
+            return jsonify(dataBooks)
         else:
             abort(404, "Mocked failure! Call GET /success.")
 

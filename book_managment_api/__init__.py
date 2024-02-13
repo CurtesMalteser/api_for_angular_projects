@@ -36,16 +36,20 @@ def create_app(test_config=None):
             start = (page - 1) * 8
             end = start + 8
 
-            dataBooks = BookDto.query.all()
-            dataBooks = map(lambda  book: Book(
+            data_books = BookDto.query.all()
+            data_books = map(lambda  book: Book(
                 id= book.bookId,
                 title= book.title,
                 author= book.author,
                 rating= book.rating
-            ), dataBooks
+            ), data_books
             )
-            dataBooks = list(dataBooks)[start:end]
-            return jsonify(dataBooks)
+            data_books = list(data_books)[start:end]
+            
+            if len(data_books) > 0:
+                return jsonify(data_books)
+            else:
+                abort(404, "Page index Not Found!")
         else:
             abort(404, "Mocked failure! Call GET /success.")
 

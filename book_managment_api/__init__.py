@@ -15,6 +15,26 @@ import math
 
 is_success : bool = True
 
+def paginate_books(request):
+    page = request.args.get('page', 1, type=int)
+    size = request.args.get('size', 8, type=int)
+    size = size if size <= 8 else 8
+    start = (page - 1) * size
+    end = start + size
+
+    data_books = BookDto.query.all()
+
+    total_results = len(data_books)
+    data_books = map(lambda  book: Book(
+        id= book.bookId,
+        title= book.title,
+        author= book.author,
+        rating= book.rating
+    ), data_books
+    )
+
+    return list(data_books)[start:end]
+
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
@@ -42,7 +62,6 @@ def create_app(test_config=None):
             data_books = BookDto.query.all()
 
             total_results = len(data_books)
-            total_pages : int =  math.ceil(total_results / size)
             data_books = map(lambda  book: Book(
                 id= book.bookId,
                 title= book.title,

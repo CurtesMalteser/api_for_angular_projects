@@ -11,6 +11,7 @@ from flask_cors import (
 import json
 from book_managment_api.models.book import Book
 from book_managment_api.models.book_dto import *
+import math
 
 is_success : bool = True
 
@@ -33,10 +34,15 @@ def create_app(test_config=None):
     def getBooks():
         if(is_success):
             page = request.args.get('page', 1, type=int)
-            start = (page - 1) * 8
-            end = start + 8
+            size = request.args.get('size', 8, type=int)
+            size = size if size <= 8 else 8
+            start = (page - 1) * size
+            end = start + size
 
             data_books = BookDto.query.all()
+
+            total_results = len(data_books)
+            total_pages : int =  math.ceil(total_results / size)
             data_books = map(lambda  book: Book(
                 id= book.bookId,
                 title= book.title,
@@ -47,7 +53,13 @@ def create_app(test_config=None):
             data_books = list(data_books)[start:end]
             
             if len(data_books) > 0:
-                return jsonify(data_books)
+                return jsonify({
+                    'success': True,
+                    'books': data_books,
+                    'page': page,
+                    'total_pages': total_pages,
+                    'total_results': total_results
+                    })
             else:
                 abort(404, "Page index Not Found!")
         else:

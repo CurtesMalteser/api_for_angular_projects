@@ -57,7 +57,7 @@ def create_app(test_config=None):
                     'success': True,
                     'books': data_books,
                     'page': page,
-                    'total_pages': total_pages,
+                    'page_size': size,
                     'total_results': total_results
                     })
             else:

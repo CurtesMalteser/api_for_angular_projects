@@ -49,7 +49,12 @@ def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
 
-    setup_db(app)
+    if test_config is None:
+        setup_db(app)
+    else:
+        config: dict = test_config
+        database_path = str(config.get('SQLALCHEMY_DATABASE_URI'))
+        setup_db(app, database_path=database_path)
 
     cors = CORS(app, resources={r"*": {"origins": "*"}})
 

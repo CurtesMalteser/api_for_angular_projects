@@ -5,7 +5,7 @@ from sqlalchemy.orm import mapped_column
 
 username = os.environ.get('USER', os.environ.get('USERNAME'))
 database_name = "bookshelf"
-database_path = "postgresql://{}:{}@{}/{}".format(username, username,'localhost:5432', database_name)
+database_path = "postgresql://{}@{}/{}".format(username,'localhost:5432', database_name)
 
 db = SQLAlchemy()
 

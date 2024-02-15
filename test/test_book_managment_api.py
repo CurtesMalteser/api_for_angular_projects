@@ -45,10 +45,8 @@ def tearDownDb():
     db.session.close()
 
 class BookManagementApiTestCase(unittest.TestCase):
-    """This class represents the trivia test case"""
 
     def setUp(self):
-        """Define test variables and initialize app."""
         self.database_name = database_name
         self.database_path = database_path
         self.app = create_app({
@@ -67,11 +65,11 @@ class BookManagementApiTestCase(unittest.TestCase):
     def test_get_books_success(self):
         res = self.client().get('/books')
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_get_books_pagination(self):
         res = self.client().get('/books?page=2')
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_get_books_max_books_size_success(self):
         res = self.client().get('/books?page=1&size=100')
@@ -80,6 +78,19 @@ class BookManagementApiTestCase(unittest.TestCase):
         books = list(data.get('books'))
 
         self.assertEqual(10, len(books))
+
+    def test_get_books_non_existing_page_failure_400(self):
+        res = self.client().get('/books?page=1000')
+        self.assertEqual(400, res.status_code)
+
+    def test_get_books_not_available_db_failure_500(self):
+        withContext(self.app, tearDownDb)
+        res = self.client().get('/books')
+        self.assertEqual(500, res.status_code)
+
+    def test_fake_end_point_expected_404(self):
+        res = self.client().get('/fake_end_point')
+        self.assertEqual(404, res.status_code)
 
 
 if __name__ == "__main__":

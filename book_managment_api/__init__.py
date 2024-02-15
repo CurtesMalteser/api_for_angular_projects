@@ -1,3 +1,4 @@
+from operator import is_
 from flask import (
     Flask,
     jsonify,
@@ -21,7 +22,12 @@ def paginate_books_or_none(request):
     start = (page - 1) * size
     end = start + size
 
-    data_books = BookDto.query.order_by(BookDto.id).all()
+    data_books = []
+    
+    try:
+        data_books = BookDto.query.order_by(BookDto.id).all()
+    except:
+        abort(500)
 
     total_results = len(data_books)
     data_books = map(lambda  book: Book(
@@ -69,7 +75,7 @@ def create_app(test_config=None):
     def getBooks():
         if(is_success):
             books = paginate_books_or_none(request=request)
-            
+
             if books is None:
                 abort(400)
             else:

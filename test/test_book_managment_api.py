@@ -95,7 +95,7 @@ class BookManagementApiTestCase(unittest.TestCase):
 
         self.assertEqual(404, res.status_code)
 
-    def test_dele_book_success(self):
+    def test_delete_book_success(self):
         res = self.client().delete('/book/1')
 
         self.assertEqual(200, res.status_code)
@@ -105,6 +105,21 @@ class BookManagementApiTestCase(unittest.TestCase):
 
         self.assertEqual(400, res.status_code)
 
+
+    def test_add_book_success(self):
+        res = self.client().post('/book', data='{"id": "100", "title": "Book 100", "author": "Author 100", "rating": 5}', content_type='application/json')
+
+        self.assertEqual(200, res.status_code)
+
+    def test_add_book_missing_title_failure_422(self):
+        res = self.client().post('/book', data='{"id": "100", "author": "Author 100", "rating": 5}', content_type='application/json')
+
+        self.assertEqual(422, res.status_code)
+
+    def test_add_book_missing_rating_success(self):
+        res = self.client().post('/book', data='{"id": "100", "title": "Book 100", "author": "Author 100"}', content_type='application/json')
+
+        self.assertEqual(200, res.status_code)
 
 if __name__ == "__main__":
     unittest.main()

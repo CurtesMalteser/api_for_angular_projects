@@ -81,16 +81,29 @@ class BookManagementApiTestCase(unittest.TestCase):
 
     def test_get_books_non_existing_page_failure_400(self):
         res = self.client().get('/books?page=1000')
+
         self.assertEqual(400, res.status_code)
 
     def test_get_books_not_available_db_failure_500(self):
         withContext(self.app, tearDownDb)
         res = self.client().get('/books')
+
         self.assertEqual(500, res.status_code)
 
     def test_fake_end_point_expected_404(self):
         res = self.client().get('/fake_end_point')
+
         self.assertEqual(404, res.status_code)
+
+    def test_dele_book_success(self):
+        res = self.client().delete('/book/1')
+
+        self.assertEqual(200, res.status_code)
+
+    def test_delete_non_existing_book_failure_400(self):
+        res = self.client().delete('/book/1000')
+
+        self.assertEqual(400, res.status_code)
 
 
 if __name__ == "__main__":

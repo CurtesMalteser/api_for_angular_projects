@@ -16,8 +16,8 @@ is_success : bool = True
 
 def paginate_books_or_none(request):
     page = request.args.get('page', 1, type=int)
-    size = request.args.get('size', 8, type=int)
-    size = size if size <= 8 else 8
+    size = request.args.get('size', 10, type=int)
+    size = size if size <= 10 else 10
     start = (page - 1) * size
     end = start + size
 
@@ -84,7 +84,6 @@ def create_app(test_config=None):
         if(is_success):
             content_type = request.headers.get('Content-Type')
             if ('application/json' in str(content_type)):
-                error = False
                 try:
                     json_data = json.dumps(request.json)
                     book = json.loads(json_data, object_hook = lambda d : Book.fromDict(d = d))
@@ -98,7 +97,7 @@ def create_app(test_config=None):
                     db.session.rollback()
                     abort(422)
                 finally:
-                        db.session.close()
+                    db.session.close()
 
             else:
                 abort(404, "Content type is not supported.")

@@ -135,7 +135,7 @@ class BookManagementApiTestCase(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         
 
-    def test_update_booke_rating_fails_if_rating_not_included(self):
+    def test_update_book_rating_fails_if_rating_not_included(self):
         book_id = '1'
         res = self.client().patch("/book/{}".format(book_id), data='{"id": "100", "author": "Author 100"', content_type='application/json')
 
@@ -160,6 +160,11 @@ class BookManagementApiTestCase(unittest.TestCase):
         self.assertEqual(200, res.status_code)
         self.assertEqual(0, len(list(books)))
 
+    def test_search_bad_request_missing_search(self):
+        res = self.client().post('/books', content_type='application/json')
+
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Bad request', res.get_json().get('message'))
 
 if __name__ == "__main__":
     unittest.main()

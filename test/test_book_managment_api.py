@@ -13,6 +13,7 @@ database_path = "postgresql://{}:{}@{}/{}".format(username, username,'localhost:
 import unittest
 from book_managment_api import create_app
 from book_managment_api.models.book_dto import BookDto, db
+from book_managment_api.models.book import Book
 import os
 import unittest
 import json
@@ -73,9 +74,8 @@ class BookManagementApiTestCase(unittest.TestCase):
 
     def test_get_books_max_books_size_success(self):
         res = self.client().get('/books?page=1&size=100')
-        jsonData = json.dumps(res.json)
-        data = json.loads(jsonData)
-        books = list(data.get('books'))
+        json = res.get_json()
+        books = list(json.get('books'))
 
         self.assertEqual(10, len(books))
 
@@ -120,6 +120,29 @@ class BookManagementApiTestCase(unittest.TestCase):
         res = self.client().post('/book', data='{"id": "100", "title": "Book 100", "author": "Author 100"}', content_type='application/json')
 
         self.assertEqual(200, res.status_code)
+
+    def test_update_book_rating_success(self):
+        book_id = '1'
+        book_rating = 5
+        res = self.client().patch("/book/{}".format(book_id), data='{{"rating": {}}}'.format(book_rating), content_type='application/json')
+
+        res = self.client().get('/books')
+        books = res.get_json().get('books')
+        books = map(lambda d : Book.fromDict(d = d), books)
+        book = next(filter(lambda b: b.id == book_id, books))
+
+        self.assertEqual(book_rating, book.rating)
+        self.assertEqual(200, res.status_code)
+        
+
+    def test_update_booke_rating_fails_if_rating_not_included(self):
+        book_id = '1'
+        res = self.client().patch("/book/{}".format(book_id), data='{"id": "100", "author": "Author 100"', content_type='application/json')
+
+        self.assertEqual(400, res.status_code)
+        self.assertEqual('Bad request', res.get_json().get('message'))
+        
+
 
 if __name__ == "__main__":
     unittest.main()

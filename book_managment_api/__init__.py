@@ -142,6 +142,37 @@ def create_app(test_config=None):
         else:
             abort(404, "Mocked failure! Call GET /success.")
 
+    @app.route('/book/<string:book_id>', methods=['PATCH'])
+    @cross_origin()
+    def update_book_ratomg(book_id: str):
+        if(is_success):
+            content_type = request.headers.get('Content-Type')
+            if ('application/json' in str(content_type)):
+                body = request.get_json()
+                try:
+                    book = BookDto.query.filter(BookDto.id == book_id).one_or_none()
+
+                    if(book is None):
+                        abort(404)
+
+                    if('rating' in body):
+                        book.rating = int(body.get("rating"))
+
+                    book.update()
+
+                    return jsonify({
+                        "sucess": True,
+                        "updated": book_id,
+                        })
+
+                except:
+                    abort(400) 
+                        
+            else:
+                abort(404)
+        else:
+            abort(404, "Mocked failure! Call GET /success.")
+
     @app.route('/success')
     @cross_origin()
     def isSuccess():

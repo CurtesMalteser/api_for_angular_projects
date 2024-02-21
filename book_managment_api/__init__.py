@@ -1,4 +1,3 @@
-from operator import is_
 from flask import (
     Flask,
     jsonify,
@@ -15,7 +14,7 @@ from book_managment_api.models.book_dto import *
 
 is_success : bool = True
 
-def paginate_books_or_none(request):
+def paginate_books_or_none(request, query):
     page = request.args.get('page', 1, type=int)
     size = request.args.get('size', 10, type=int)
     size = size if size <= 10 else 10
@@ -25,7 +24,7 @@ def paginate_books_or_none(request):
     data_books = []
     
     try:
-        data_books = BookDto.query.order_by(BookDto.id).all()
+        data_books = query()
     except:
         abort(500)
 
@@ -72,9 +71,11 @@ def create_app(test_config=None):
 
     @app.route('/books')
     @cross_origin()
-    def getBooks():
+    def get_books():
         if(is_success):
-            books = paginate_books_or_none(request=request)
+            query = lambda : BookDto.query.order_by(BookDto.id).all()
+
+            books = paginate_books_or_none(request=request, query=query)
 
             if books is None:
                 abort(400)
@@ -144,7 +145,7 @@ def create_app(test_config=None):
 
     @app.route('/book/<string:book_id>', methods=['PATCH'])
     @cross_origin()
-    def update_book_ratomg(book_id: str):
+    def update_book_rating(book_id: str):
         if(is_success):
             content_type = request.headers.get('Content-Type')
             if ('application/json' in str(content_type)):
@@ -172,6 +173,39 @@ def create_app(test_config=None):
                 abort(404)
         else:
             abort(404, "Mocked failure! Call GET /success.")
+
+    @app.route('/books', methods=['POST'])
+    @cross_origin()
+    def search_books():
+        if(is_success):
+            content_type = request.headers.get('Content-Type')
+            if ('application/json' in str(content_type)):
+                body = request.get_json()
+                try:
+                    search = body.get('search')
+
+                    query = lambda : BookDto.query.filter(BookDto.title.ilike('%{}%'.format(search))).order_by(BookDto.id).all()
+
+                    books = paginate_books_or_none(request=request, query=query)
+
+                    if books is None:
+                        return jsonify({
+                            'success': True,
+                            'books': [],
+                            'page': 0,
+                            'page_size': 0,
+                            'total_results': 0
+                            })
+                    else:
+                        return books
+                except Exception as e:
+                    abort(400) 
+       
+            else:
+                abort(404)
+        else:
+            abort(404)
+
 
     @app.route('/success')
     @cross_origin()

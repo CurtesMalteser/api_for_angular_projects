@@ -141,7 +141,24 @@ class BookManagementApiTestCase(unittest.TestCase):
 
         self.assertEqual(400, res.status_code)
         self.assertEqual('Bad request', res.get_json().get('message'))
-        
+
+
+    def test_search_books_that_matches_query_success(self):
+        res = self.client().post('/books', data='{"search": "ok 1"}', content_type='application/json')
+
+        books = res.get_json().get('books')
+        books = map(lambda d : Book.fromDict(d = d), books)        
+
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(3, len(list(books)))
+
+    def test_search_books_no_matches_query_success(self):
+        res = self.client().post('/books', data='{"search": "no books"}', content_type='application/json')
+
+        books = res.get_json().get('books')  
+
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(0, len(list(books)))
 
 
 if __name__ == "__main__":

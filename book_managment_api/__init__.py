@@ -89,8 +89,7 @@ def create_app(test_config=None):
     @cross_origin()
     def addBook():
         if(is_success):
-            content_type = request.headers.get('Content-Type')
-            if ('application/json' in str(content_type)):
+            if (request.is_json):
                 try:
                     json_data = json.dumps(request.json)
                     book = json.loads(json_data, object_hook = lambda d : Book.fromDict(d = d))
@@ -116,7 +115,6 @@ def create_app(test_config=None):
     @app.route('/book/<string:bookId>', methods=['DELETE'])
     @cross_origin()
     def deleteBook(bookId: str):
-
         if(is_success):
             error = False
 
@@ -147,8 +145,7 @@ def create_app(test_config=None):
     @cross_origin()
     def update_book_rating(book_id: str):
         if(is_success):
-            content_type = request.headers.get('Content-Type')
-            if ('application/json' in str(content_type)):
+            if (request.is_json):
                 body = request.get_json()
                 try:
                     book = BookDto.query.filter(BookDto.id == book_id).one_or_none()
@@ -178,8 +175,7 @@ def create_app(test_config=None):
     @cross_origin()
     def search_books():
         if(is_success):
-            content_type = request.headers.get('Content-Type')
-            if ('application/json' in str(content_type)):
+            if (request.is_json):
                 body = request.get_json()
                 try:
                     search = body.get('search')

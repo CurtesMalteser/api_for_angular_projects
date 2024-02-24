@@ -16,7 +16,6 @@ from book_managment_api.models.book_dto import BookDto, db
 from book_managment_api.models.book import Book
 import os
 import unittest
-import json
 
 def withContext(app, func):
     with app.app_context():

@@ -1,3 +1,4 @@
+import json
 from flask import (
     Flask,
     jsonify,
@@ -8,7 +9,6 @@ from flask_cors import (
     CORS,
     cross_origin,
     )
-import json
 from book_managment_api.models.book import Book
 from book_managment_api.models.book_dto import *
 
@@ -73,7 +73,8 @@ def create_app(test_config=None):
     @cross_origin()
     def get_books():
         if(is_success):
-            query = lambda : BookDto.query.order_by(BookDto.id).all()
+            def query():
+                return BookDto.query.order_by(BookDto.id).all()
 
             books = paginate_books_or_none(request=request, query=query)
 
@@ -87,9 +88,9 @@ def create_app(test_config=None):
 
     @app.route('/book', methods=['POST'])
     @cross_origin()
-    def addBook():
-        if(is_success):
-            if (request.is_json):
+    def add_book():
+        if is_success:
+            if request.is_json:
                 try:
                     json_data = json.dumps(request.json)
                     book = json.loads(json_data, object_hook = lambda d : Book.fromDict(d = d))
@@ -97,7 +98,10 @@ def create_app(test_config=None):
                 
                     BookDto(bookId = book.id, title=book.title, author= book.author, rating= book.rating).insert()
                 
-                    return jsonify(book)
+                    return jsonify({
+                        "success": True,
+                        "book": book
+                    })
 
                 except:
                     db.session.rollback()
@@ -110,16 +114,43 @@ def create_app(test_config=None):
         else:
             abort(404, "Mocked failure! Call GET /success.")
 
+    @app.route('/book/<string:book_id>')
+    @cross_origin()
+    def get_book(book_id: str):
+        error = False
+        book = None
+        try:
+            book_dto = BookDto.query.filter(BookDto.bookId == str(book_id)).one_or_none()
+            if isinstance(book_dto, BookDto):
+                # Ignore type cast because it checks if it is a BookDto
+                book = Book.fromDto(book_dto) # type: ignore
+            else:
+                error = True
+
+        except Exception as ex:
+            db.session.rollback()
+            error = True
+            print(f"🧨 error: {ex}")
+        finally:
+            db.session.close()
+
+        if error:
+            abort(400)
+        else:
+            return jsonify({
+                "success": True,
+                "book": book,
+            })
 
 
     @app.route('/book/<string:bookId>', methods=['DELETE'])
     @cross_origin()
-    def deleteBook(bookId: str):
+    def delete_book(bookId: str):
         if(is_success):
             error = False
 
             try:
-                book = BookDto.query.filter(BookDto.id == bookId).one_or_none()
+                book = BookDto.query.filter(BookDto.bookId == bookId).one_or_none()
                 if book is None:
                     error = True
                 else:
@@ -205,14 +236,14 @@ def create_app(test_config=None):
 
     @app.route('/success')
     @cross_origin()
-    def isSuccess():
+    def is_success():
         global is_success
         is_success = True
         return jsonify("isSuccess: True")
 
     @app.route('/failure')
     @cross_origin()
-    def isFailure():
+    def is_failure():
         global is_success
         is_success = False
         return jsonify("isSuccess: False")
